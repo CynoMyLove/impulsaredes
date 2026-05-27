@@ -218,9 +218,9 @@ def agregar_headers_seguridad(response):
 
     response.headers["Content-Security-Policy"] = (
         "default-src 'self'; "
-        "script-src 'self' https://cdn.jsdelivr.net https://cdn.matomo.cloud; "
+        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.matomo.cloud; "
         "style-src 'self' 'unsafe-inline'; "
-        "img-src 'self' data:; "
+        "img-src 'self' data: https://impulsaredes.matomo.cloud; "
         "connect-src 'self' https://impulsaredes.matomo.cloud; "
         "frame-ancestors 'none'; "
         "base-uri 'self'; "
