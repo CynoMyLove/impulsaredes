@@ -513,3 +513,8 @@ canvas {
         text-align: center;
     }
 }
+.privacy-note {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #4b5563;
+}
