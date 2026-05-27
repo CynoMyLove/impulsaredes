@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>ImpulsaRedes | Simulador de impacto</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="description" content="ImpulsaRedes permite simular el impacto de estrategias de contenido en redes sociales.">
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- Chart.js solo se utiliza cuando existen resultados -->
+    {% if resultado %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    {% endif %}
+
+    <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</head>
+
+<body data-has-results="{{ 'true' if resultado else 'false' }}">
+
+    <a class="skip-link" href="#simulador">Saltar al simulador</a>
+
+    <div class="page">
+
+        <nav class="navbar" aria-label="Navegación principal">
+            <a href="#inicio" class="brand" aria-label="Ir al inicio de ImpulsaRedes">ImpulsaRedes</a>
+
+            <div class="nav-links">
+                <a href="#inicio">Inicio</a>
+                <a href="#simulador">Simulador</a>
+                <a href="#resultados">Resultados</a>
+                <a href="#recomendaciones">Recomendaciones</a>
+            </div>
+        </nav>
+
+        <header class="hero" id="inicio">
+            <p class="tag">Centro de análisis para contenido digital</p>
+
+            <h1>Analiza el impacto de tu contenido en redes sociales</h1>
+
+            <p class="hero-text">
+                Descubre qué tan efectiva puede ser una publicación antes de compartirla.
+                Evalúa plataformas, formatos, frecuencia y tendencias para tomar mejores decisiones.
+            </p>
+
+            <div class="hero-actions">
+                <a href="#simulador" class="btn btn-primary">Comenzar simulación</a>
+                <a href="#recomendaciones" class="btn btn-secondary">Ver consejos</a>
+            </div>
+        </header>
+
+        <section class="section intro" aria-labelledby="analizar-titulo">
+            <h2 id="analizar-titulo">¿Qué puedes analizar?</h2>
+
+            <div class="cards">
+                <article class="info-card">
+                    <span class="icon">◉</span>
+                    <h3>Plataforma</h3>
+                    <p>Compara el posible rendimiento en Instagram, TikTok, Facebook o YouTube.</p>
+                </article>
+
+                <article class="info-card">
+                    <span class="icon">▣</span>
+                    <h3>Tipo de contenido</h3>
+                    <p>Evalúa videos cortos, imágenes, historias, carruseles o publicaciones informativas.</p>
+                </article>
+
+                <article class="info-card">
+                    <span class="icon">◆</span>
+                    <h3>Interacción</h3>
+                    <p>Obtén una estimación de alcance, visualizaciones, likes, comentarios y compartidos.</p>
+                </article>
+            </div>
+        </section>
+
+        <main>
+
+            <section class="section" id="simulador" aria-labelledby="simulador-titulo">
+                <div class="section-header">
+                    <div>
+                        <h2 id="simulador-titulo">Simulador de impacto</h2>
+                        <p>
+                            Selecciona las características de tu estrategia para calcular un impacto estimado.
+                        </p>
+                    </div>
+                </div>
+
+                {% if errores %}
+                <div class="alert alert-error" role="alert">
+                    {% for error in errores %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% if mensaje %}
+                <div class="alert alert-success" role="status">
+                    <p>{{ mensaje }}</p>
+                </div>
+                {% endif %}
+
+                <form method="POST" class="form-card" aria-label="Formulario de simulación de impacto">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="form-grid">
+
+                        <div class="field">
+                            <label for="plataforma">Plataforma</label>
+                            <select id="plataforma" name="plataforma" required aria-describedby="ayuda-plataforma">
+                                {% for opcion in plataformas %}
+                                <option value="{{ opcion }}" {% if form_data.get('plataforma') == opcion %}selected{% endif %}>
+                                    {{ opcion }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small id="ayuda-plataforma">Cada red social tiene un comportamiento distinto de alcance e interacción.</small>
+                        </div>
+
+                        <div class="field">
+                            <label for="tipo_contenido">Tipo de contenido</label>
+                            <select id="tipo_contenido" name="tipo_contenido" required aria-describedby="ayuda-contenido">
+                                {% for opcion in tipos_contenido %}
+                                <option value="{{ opcion }}" {% if form_data.get('tipo_contenido') == opcion %}selected{% endif %}>
+                                    {{ opcion }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small id="ayuda-contenido">Los videos cortos y carruseles suelen captar mejor la atención visual.</small>
+                        </div>
+
+                        <div class="field">
+                            <label for="frecuencia">Frecuencia de publicación</label>
+                            <select id="frecuencia" name="frecuencia" required aria-describedby="ayuda-frecuencia">
+                                {% for opcion in frecuencias %}
+                                <option value="{{ opcion }}" {% if form_data.get('frecuencia') == opcion %}selected{% endif %}>
+                                    {{ opcion }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small id="ayuda-frecuencia">Publicar con constancia puede mejorar la presencia digital del perfil.</small>
+                        </div>
+
+                        <div class="field">
+                            <label for="duracion">Duración del contenido</label>
+                            <select id="duracion" name="duracion" required aria-describedby="ayuda-duracion">
+                                {% for opcion in duraciones %}
+                                <option value="{{ opcion }}" {% if form_data.get('duracion') == opcion %}selected{% endif %}>
+                                    {{ opcion }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small id="ayuda-duracion">Los contenidos breves suelen ser más fáciles de consumir y compartir.</small>
+                        </div>
+
+                        <div class="field full">
+                            <label for="tendencias">¿Usa tendencias, música popular o hashtags?</label>
+                            <select id="tendencias" name="tendencias" required aria-describedby="ayuda-tendencias">
+                                {% for opcion in tendencias_opciones %}
+                                <option value="{{ opcion }}" {% if form_data.get('tendencias') == opcion %}selected{% endif %}>
+                                    {{ opcion }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small id="ayuda-tendencias">El uso de tendencias puede aumentar la visibilidad inicial de una publicación.</small>
+                        </div>
+
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-submit" aria-label="Generar análisis de estrategia">
+                            Generar análisis de estrategia
+                        </button>
+
+                        <a href="{{ url_for('index') }}#simulador" class="btn-clear" aria-label="Limpiar selección y hacer nueva simulación">
+                            Nueva simulación
+                        </a>
+                    </div>
+                </form>
+            </section>
+
+            {% if resultado %}
+            <section class="section results-section appear" id="resultados" aria-labelledby="resultados-titulo">
+                <div class="section-header">
+                    <div>
+                        <h2 id="resultados-titulo">Resultados de la simulación</h2>
+                        <p class="strategy-summary">
+                            <strong>Estrategia analizada:</strong> {{ resultado.resumen }}
+                        </p>
+                    </div>
+
+                    <span class="badge badge-{{ resultado.clase_nivel }}">
+                        Engagement {{ resultado.nivel }}
+                    </span>
+                </div>
+
+                <div class="metrics-grid">
+                    <article class="metric-card">
+                        <h3>{{ resultado.alcance }}</h3>
+                        <p>Alcance estimado</p>
+                    </article>
+
+                    <article class="metric-card">
+                        <h3>{{ resultado.visualizaciones }}</h3>
+                        <p>Visualizaciones</p>
+                    </article>
+
+                    <article class="metric-card">
+                        <h3>{{ resultado.likes }}</h3>
+                        <p>Likes</p>
+                    </article>
+
+                    <article class="metric-card">
+                        <h3>{{ resultado.comentarios }}</h3>
+                        <p>Comentarios</p>
+                    </article>
+
+                    <article class="metric-card">
+                        <h3>{{ resultado.compartidos }}</h3>
+                        <p>Compartidos</p>
+                    </article>
+                </div>
+
+                <div class="recommendation-box">
+                    <h3>Diagnóstico</h3>
+                    <p>{{ resultado.recomendacion }}</p>
+                </div>
+            </section>
+
+            <section class="section charts-section appear" id="estadisticas" aria-labelledby="graficas-titulo">
+                <div class="section-header">
+                    <div>
+                        <h2 id="graficas-titulo">Gráficas de resultados</h2>
+                        <p>Estas gráficas ayudan a interpretar visualmente los datos obtenidos.</p>
+                    </div>
+                </div>
+
+                <div class="charts-layout">
+                    <article class="chart-card chart-large">
+                        <h3>Comparación de métricas</h3>
+                        <canvas id="graficaBarras" aria-label="Gráfica de barras de métricas estimadas" role="img"></canvas>
+                        <p class="chart-caption">
+                            La gráfica compara alcance, visualizaciones, likes, comentarios y compartidos.
+                        </p>
+                    </article>
+
+                    <article class="chart-card">
+                        <h3>Distribución de interacción</h3>
+                        <canvas id="graficaPastel" aria-label="Gráfica circular de interacción" role="img"></canvas>
+                        <p class="chart-caption">
+                            La gráfica muestra cómo se distribuyen likes, comentarios y compartidos.
+                        </p>
+                    </article>
+
+                    <article class="chart-card">
+                        <h3>Porcentaje de engagement</h3>
+                        <canvas id="graficaDona" aria-label="Gráfica de dona de engagement estimado" role="img"></canvas>
+                        <p class="chart-caption">
+                            La gráfica representa el porcentaje estimado de engagement de la estrategia.
+                        </p>
+                    </article>
+                </div>
+
+                <script id="chart-data" type="application/json">
+                    {{ chart_data | tojson }}
+                </script>
+            </section>
+            {% endif %}
+
+            <section class="section recommendations" id="recomendaciones" aria-labelledby="recomendaciones-titulo">
+                <h2 id="recomendaciones-titulo">¿Cómo mejorar tu estrategia?</h2>
+
+                <p class="recommendations-text">
+                    Para aumentar el impacto de tus publicaciones, es importante combinar buen formato,
+                    constancia y contenido atractivo para la audiencia.
+                </p>
+
+                <div class="recommendation-grid">
+                    <article>
+                        <h3>Usa contenido visual</h3>
+                        <p>Los videos cortos, imágenes claras y carruseles ayudan a captar mejor la atención.</p>
+                    </article>
+
+                    <article>
+                        <h3>Publica con constancia</h3>
+                        <p>Una frecuencia estable ayuda a que tu perfil tenga mayor actividad y presencia.</p>
+                    </article>
+
+                    <article>
+                        <h3>Aprovecha tendencias</h3>
+                        <p>El uso de hashtags, música popular o temas actuales puede mejorar el alcance.</p>
+                    </article>
+
+                    <article>
+                        <h3>Analiza tus resultados</h3>
+                        <p>Comparar likes, comentarios y compartidos permite mejorar futuras publicaciones.</p>
+                    </article>
+                </div>
+            </section>
+
+        </main>
+
+        <footer class="footer">
+            <p>
+                ImpulsaRedes utiliza datos simulados para estimar impacto digital.
+                Si se integra analítica externa como Matomo, se recomienda agregar aviso de privacidad.
+            </p>
+        </footer>
+
+    </div>
+
+</body>
+</html>
